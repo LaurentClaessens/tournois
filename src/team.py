@@ -14,3 +14,11 @@ class Team:
             if player.name == name:
                 return player
         raise NameError(f"No player with that name: {name}")
+
+    def __str__(self):
+        lines: list[str] = []
+        for player in self.players:
+            lines.append(player.name)
+            lines.append(f"  {player.mean}")
+            lines.append(f"  {player.sigma}")
+        return "\n".join(lines)

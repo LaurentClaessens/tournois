@@ -1,5 +1,6 @@
 import math
 
+from scipy.stats import norm
 from src.player import Player
 
 
@@ -12,7 +13,17 @@ class Fight:
         """The probability that the winner actually won."""
         mean = self.winner.mean - self.loser.mean
         sigma = math.sqrt(self.winner.sigma**2+self.loser.sigma**2)
-        return 1-normal(-mean/sigma)
+        f_proba = 1 - norm.cdf(0, mean, sigma)
+        return f_proba
+
+    def simul_proba(self, N: int = 50000):
+        """Compute the probability by simulating."""
+        success: list[bool] = []
+        for _ in range(0, N):
+            s1 = self.winner.get_strength()
+            s2 = self.loser.get_strength()
+            success.append(s1 > s2)
+        return sum(success)/len(success)
 
 
 def normal(x: float) -> float:

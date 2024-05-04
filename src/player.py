@@ -1,3 +1,6 @@
+import numpy
+
+
 class Player:
 
     def __init__(self, name: str, mean: float, sigma: float):
@@ -6,3 +9,11 @@ class Player:
         self.name = name
         self.mean = mean
         self.sigma = sigma
+
+    def get_strength(self) -> float:
+        """Return the instant strength of the player."""
+        if self.sigma <= 0:
+            # The optimizer has no idea of what sigma is.
+            # It could get a negative value
+            return self.mean
+        return numpy.random.normal(self.mean, self.sigma, 1)[0]
