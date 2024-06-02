@@ -3,9 +3,10 @@
 ## Principe
 
 Nous considérons un tournois dans lequel plusieurs personnes s'affrontent. Si des poules sont faites, il est possible d'avoir des "incohérences" dans les résultats. Par exemple, il peut arriver que :
-A bat B
-B bat C
-C bat A.
+
+- A bat B
+- B bat C
+- C bat A.
 
 Si des poules sont organisées, il peut arriver que A gagne contre B en poule, mais perde en tableau.
 

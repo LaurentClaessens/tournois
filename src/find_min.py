@@ -7,7 +7,7 @@ from src.utilities import ciao
 
 
 epsilon = 0.00001
-step = 1
+step = 0.1
 
 Fun = Callable[['Point'], float]
 
@@ -111,11 +111,12 @@ def find_min(fun: Fun, x0: Point):
 
     new_x = x0
     for num in range(1, 100):
+        print(f"loop n {num}")
+        print("----------------------")
         old_x = new_x
         new_x = one_loop(fun, new_x)
         new_y = fun(new_x)
         dprint(f"après {num} tours on a : f({new_x})={new_y}")
         if abs(fun(old_x)-fun(new_x)) < epsilon:
             return new_x
-        ciao()
     return new_x

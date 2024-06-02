@@ -17,3 +17,6 @@ class Player:
             # It could get a negative value
             return self.mean
         return numpy.random.normal(self.mean, self.sigma, 1)[0]
+
+    def __repr__(self):
+        return f"{self.name}(mean={self.mean}, sigma={self.sigma})"

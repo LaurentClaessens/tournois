@@ -1,5 +1,8 @@
 #!venv/bin/python3
 
+import math
+import random
+
 
 from src.team import Team
 from src.poule import Poule
@@ -8,6 +11,7 @@ from src.fight import Fight
 from src.tournament_result import TournamentResult
 from src.find_min import Point
 from src.find_min import find_min
+from src.utilities import dprint
 
 
 player_names: list[str] = [f"player_{num}" for num in range(1, 5)]
@@ -17,7 +21,7 @@ def create_team() -> Team:
     players = []
     for num in range(0, len(player_names)):
         name = player_names[num]
-        mean = num * 10
+        mean = random.randint(0, 5)
         sigma = 0.1
         player = Player(name, mean, sigma)
         players.append(player)
@@ -32,7 +36,7 @@ def result_proba(results: TournamentResult, team: Team) -> float:
         winner = team.get_player(fr.winner_name)
         loser = team.get_player(fr.loser_name)
         fight = Fight(winner, loser)
-        proba *= fight.simul_proba()
+        proba *= fight.probability()
     return proba
 
 
@@ -56,25 +60,29 @@ class ToMinimize:
 
     def __call__(self, x: Point) -> float:
         team = point_to_team(x)
-        return result_proba(self.results, team)
+        proba = result_proba(self.results, team)
+        dprint("la proba que je devrais maximiser:", proba)
+        if proba == 0:
+            return 100
+        ans = -math.log(proba)
+        print("après log", ans)
+        return ans
 
 
 real_team = create_team()
 real_poule = Poule(real_team)
 real_results = real_poule.results()
-print("proba de la poule:", real_poule.probability())
-print(real_results)
-print(result_proba(real_results, real_team))
-
 to_minimize = ToMinimize(real_results)
 
-x0 = Point([4, 0, 3, 0, 2, 0, 1, 0])
-print("----- go pour opti")
+x0 = Point([3, 0, 3, 0, 3, 0, 3, 0])
+team0 = point_to_team(x0)
 x_min = find_min(to_minimize, x0)
-print("----- fin de opti")
 
 team = point_to_team(x_min)
 proba = result_proba(real_results, team)
+print("-----")
+print("Équippe réelle")
+print(real_team)
 print("---- équipe opti")
 print(team)
 print("-----")

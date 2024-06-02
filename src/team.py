@@ -5,7 +5,9 @@ from src.player import Player
 
 class Team:
 
-    def __init__(self, players: list[Player]):
+    def __init__(self, players: set[Player]):
+        # The player are a set because I want them
+        # to be unordered.
         self.players = players
 
     def get_player(self, name: str) -> Player:
@@ -16,8 +18,11 @@ class Team:
         raise NameError(f"No player with that name: {name}")
 
     def __str__(self):
+        """Print the team sorted by mean."""
         lines: list[str] = []
-        for player in self.players:
+        s_players = list(self.players)
+        s_players.sort(key=lambda x: x.mean)
+        for player in s_players:
             lines.append(player.name)
             lines.append(f"  {player.mean}")
             lines.append(f"  {player.sigma}")

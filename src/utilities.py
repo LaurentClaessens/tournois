@@ -4,6 +4,7 @@ import os
 import random
 import datetime
 import hashlib
+import inspect
 import json
 import random
 import socket
@@ -366,12 +367,13 @@ def ciao(message=None, color=None):
         with ColorOutput("yellow"):
             print("\n", message, "\n")
     x = random.random()
-    if x > 2:
-        return
-    print("ciao!")
-    x = random.random()
     if x > 3:
         return "pas possible"
+
+    current_frame = inspect.stack()[1]
+    current_file = Path(current_frame[1]).resolve()
+    current_line = current_frame[2]
+    print(f"{current_file}, line {current_line} --> ciao !")
     sys.exit(1)
 
 
