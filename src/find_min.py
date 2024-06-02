@@ -1,9 +1,11 @@
 """Find local minimum."""
 
+import random
 from typing import Callable
 
 from src.utilities import dprint
 from src.utilities import ciao
+_ = ciao
 
 
 epsilon = 0.00001
@@ -83,7 +85,6 @@ def v_optimize(fun: Fun, x0: Point, v: Vector) -> Point:
     new_x = x0 + v
     num = 0
     while fun(new_x) < fun(old_x):
-        dprint(f"  opti {v} -> {new_x}")
         num += 1
         old_x = new_x
         new_x = new_x + v
@@ -97,9 +98,10 @@ def v_optimize(fun: Fun, x0: Point, v: Vector) -> Point:
 def one_loop(fun: Fun, x0: Point) -> Point:
     """Make one optimization in each direction."""
     new_x = x0
-    for i in range(0, len(x0)):
+    indices = list(range(0, len(x0)))
+    random.shuffle(indices)
+    for i in indices:
         v = find_delta(fun, new_x, i)
-        dprint(f"direction {i}: vecteur={v}")
         new_x = v_optimize(fun, new_x, v)
     return new_x
 
@@ -107,7 +109,7 @@ def one_loop(fun: Fun, x0: Point) -> Point:
 def find_min(fun: Fun, x0: Point):
     """Find local min from x0."""
     y0 = fun(x0)
-    dprint(f"départ: f({x0})={y0}")
+    print(f"départ: f({x0})={y0}")
 
     new_x = x0
     for num in range(1, 100):
