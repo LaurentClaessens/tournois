@@ -1,11 +1,12 @@
 #!venv/bin/python3
 
 import math
+import random
 
 
 import dirmanage
 from src.team import Team
-from src.poule import Poule
+from src.tournament import Tournament
 from src.player import Player
 from src.fight import Fight
 from src.tournament_result import TournamentResult
@@ -15,29 +16,7 @@ from src.utilities import dprint
 from src.utilities import read_json_file
 
 
-player_names: list[str] = [f"player_{num}" for num in range(1, 5)]
-
-
-def simulate_poule(team: Team):
-    """Simultate fights from the team."""
-    fights: list[Fight] = []
-    players = team.players
-    for num, player1 in enumerate(players):
-        for player2 in self.players[num+1:]:
-            print(f"{player1.name} Vs {player2.name}")
-            s1 = player1.get_strength()
-            s2 = player2.get_strength()
-            if s1 > s2:
-                winner = player1
-                loser = player2
-            else:
-                winner = player2
-                loser = player1
-            fights.append(Fight(winner, loser))
-    return fights
-
-
-def create_poule(team: Team, data: dict) -> Poule:
+def create_tournament(team: Team, data: dict) -> Tournament:
     """Read the fights in the data."""
     fights: list[Fight] = []
     for level, couples in data["fights"].items():
@@ -48,15 +27,15 @@ def create_poule(team: Team, data: dict) -> Poule:
             winner = team.get_player(winner_name)
             loser = team.get_player(loser_name)
             fights.append(Fight(winner, loser))
-    poule = Poule(team)
-    poule.fights = fights
-    return poule
+    tournament = Tournament(team)
+    tournament.fights = fights
+    return tournament
 
 
 def create_team(data: dict) -> Team:
-    players: set[Player] = set()
+    players: list[Player] = []
     for name in data["names"]:
-        players.add(Player(name, 0, 0.1))
+        players.append(Player(name, 0, 0.1))
     return Team(players)
 
 
@@ -72,47 +51,59 @@ def result_proba(results: TournamentResult, team: Team) -> float:
     return proba
 
 
-def point_to_team(x: Point):
+def point_to_team(real_team: Team, x: Point):
     """Create a team with the given properties."""
-    players: list[Player] = []
-    for num, name in enumerate(player_names):
+    real_players = real_team.players
+    new_players: list[Player] = []
+    for num, player in enumerate(real_players):
         mean = x[2*num]
         sigma = x[2*num+1]
-        player = Player(name, mean, sigma)
-        players.append(player)
-    team = Team(players)
+        player = Player(player.name, mean, sigma)
+        new_players.append(player)
+    team = Team(new_players)
     return team
 
 
 class ToMinimize:
     """Probability of getting the result with the given parameters."""
 
-    def __init__(self, results: TournamentResult):
+    def __init__(self, real_team: Team, results: TournamentResult):
+        self.real_team = real_team
         self.results = results
 
     def __call__(self, x: Point) -> float:
-        team = point_to_team(x)
+        team = point_to_team(self.real_team, x)
         proba = result_proba(self.results, team)
         dprint("la proba que je devrais maximiser:", proba)
         if proba == 0:
             return 100
         ans = -math.log(proba)
-        print("après log", ans)
         return ans
 
 
-data_file = dirmanage.init_dir / "bcf.json"
+def find_one_loc_min(real_team: Team):
+    """Create  a random team and optimize it."""
+    fl: list[float] = []
+    for player in real_team.players:
+        mean = random.random()
+        sigma = 0.1
+        fl.extend([mean, sigma])
+    x0 = Point(fl)
+    team0 = point_to_team(real_team, x0)
+    x_min = find_min(to_minimize, x0)
+    return x_min
+
+
+data_file = dirmanage.init_dir / "bfc.json"
 data = read_json_file(data_file)
-real_team = create_team(data_file)
-real_poule = create_poule(team, data_file)
-real_results = real_poule.results()
-to_minimize = ToMinimize(real_results)
+real_team = create_team(data)
+real_tournament = create_tournament(real_team, data)
+real_results = real_tournament.results()
+to_minimize = ToMinimize(real_team, real_results)
 
-x0 = Point([3, 0, 3, 0, 3, 0, 3, 0])
-team0 = point_to_team(x0)
-x_min = find_min(to_minimize, x0)
 
-team = point_to_team(x_min)
+x_min = find_one_loc_min(real_team)
+team = point_to_team(real_team, x_min)
 proba = result_proba(real_results, team)
 print("-----")
 print("Équippe réelle")
@@ -121,3 +112,6 @@ print("---- équipe opti")
 print(team)
 print("-----")
 print(f"la proba des résultats avec cette équippe: {proba}")
+points = team.simulate_points()
+for player, point in points.items():
+    print(f"{player.name.ljust(15)} -> {point}")

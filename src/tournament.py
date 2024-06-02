@@ -9,7 +9,7 @@ from src.utilities import dprint
 _ = dprint
 
 
-class Poule:
+class Tournament:
     """All the fights with the players."""
 
     def __init__(self, team: Team):
